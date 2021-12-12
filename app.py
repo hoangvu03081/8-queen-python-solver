@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
 import sys
 import utils as Utils
+from Astar.queen_solver import QueenSolver
 
 class App(QMainWindow):
     def __init__(self):
