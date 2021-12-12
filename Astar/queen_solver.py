@@ -1,4 +1,4 @@
-from state import State
+from .state import State
 from collections import defaultdict
 import heapq
 import random
