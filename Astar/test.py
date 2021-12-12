@@ -15,11 +15,9 @@ initial_string = ["0" for _ in range(base * base)]
 e = QueenSolver(initial_state = initial_string, base = base, remain = remain, only_heuristics = False)
 
 
-start = time.time()
-path, expanded_list = e.solve()
-end = time.time()
+path, expanded_list, time_ = e.solve()
 
-print("Solving time: ", end - start)
+print("Solving time: ", time_)
 print()
 
 if path:

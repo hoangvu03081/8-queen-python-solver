@@ -2,7 +2,7 @@ from .state import State
 from collections import defaultdict
 import heapq
 import random
-
+import time
 class QueenSolver():
 	def __init__(self, initial_state : str, base : int = 8, remain : int = 8, only_heuristics : bool = False):
 
@@ -55,7 +55,7 @@ class QueenSolver():
 		return path[::-1]
 
 
-	def solve(self):
+	def _a_star_solve(self):
 
 		frontier = []
 		expanded_list = []
@@ -102,6 +102,13 @@ class QueenSolver():
 			
 			
 		return [], expanded_list
+
+	def solve(self):
+		start = time.time()
+		path, expanded_list = self._a_star_solve()
+		end = time.time()
+
+		return path, expanded_list, end - start
 
 	def _is_goal(self, state):
 		return state.count_queens() == self.base and self.count_attacking_pairs(state) == 0
