@@ -56,7 +56,6 @@ class QueenSolver():
 
 
 	def _a_star_solve(self):
-
 		frontier = []
 		expanded_list = []
 		trace = {}
@@ -65,7 +64,6 @@ class QueenSolver():
 		f[self.initial_state] = self.count_attacking_pairs(self.initial_state, initial = True)
 		frontier.append((f[self.initial_state], self.remain, self.initial_state, None))
 		seen = set()
-
 		while frontier:
 			f_n, g_n, state, parent_state = frontier.pop(0)
 
@@ -81,7 +79,7 @@ class QueenSolver():
 
 			
 			neighbors = state.generate_neighbors()
-
+			
 			if len(neighbors) == 0:
 				continue
 				
@@ -99,7 +97,6 @@ class QueenSolver():
 					frontier.append((f_, g_, neighbor, state))
 
 			frontier.sort(key = lambda x : x[0])
-			
 			
 		return [], expanded_list
 

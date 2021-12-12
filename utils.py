@@ -1,6 +1,9 @@
 import sys
 import re
 
+def void():
+    return
+
 def load(filepath):
     try:
         with open(filepath, 'r') as f:
@@ -14,7 +17,7 @@ def load(filepath):
 
 def convertCoordinateToBinary(coordinate, n):
     if n == 0:
-        return "0"*64
+        return list("0"*64)
     if not re.match("(\(\d, \d\))( \(\d, \d\)){"+str(n-1)+"}", coordinate):
         raise Exception("Second line format is not correct, please check again")
 
@@ -31,4 +34,4 @@ def convertCoordinateToBinary(coordinate, n):
     temp = list("0"*64)
     for pos in queenPosition:
         temp[pos] = "1"
-    return ''.join(temp)
+    return temp
