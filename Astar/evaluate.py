@@ -1,5 +1,5 @@
-from queen_solver import QueenSolver
-from utils import *
+from .queen_solver import QueenSolver
+from .utils import *
 import time
 import numpy as np
 
