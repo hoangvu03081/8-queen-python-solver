@@ -16,12 +16,16 @@ e = QueenSolver(initial_state = initial_string, base = base, remain = remain, on
 
 
 path, expanded_list, time_ = e.solve()
+goal_state = path[-1]
+
+cnf_clauses = generate_cnf_clauses(goal_state)
+print("".join(cnf_clauses))
 
 print("Solving time: ", time_)
 print()
 
 if path:
-	for state in path:
+	for state in path[::-1]:
 		draw_state(state)
 		print()
 else:

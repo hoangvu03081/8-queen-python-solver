@@ -1,8 +1,13 @@
-from .state import State
+try:
+	from .state import State
+except:
+	from state import State
+
 from collections import defaultdict
 import heapq
 import random
 import time
+
 class QueenSolver():
 	def __init__(self, initial_state : str, base : int = 8, remain : int = 8, only_heuristics : bool = False):
 
