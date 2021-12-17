@@ -140,7 +140,7 @@ class App(QMainWindow):
 
     def initQueenList(self):
         self.queenList = []
-        for i in range(0, 8):
+        for i in range(0, 64):
             tempQueen = QtWidgets.QLabel(self)
             tempQueen.setGeometry(0, 0, 65, 65)
             tempQueen.setPixmap(QtGui.QPixmap("./assets/queen.png"))
@@ -248,9 +248,11 @@ class App(QMainWindow):
                 self.spawnQueen(queenIndex)
 
         elif stateType == StateType.VISUALIZE_EXPANDED_LIST:
+            print(self.state.get("expanded_list")[self.state.get("index")])
             self.clearQueen()
             currentBoard = self.state.get("expanded_list")[self.state.get("index")]
             queenIndexList = [i for i, ltr in enumerate(currentBoard) if ltr == "1"]
+            print(queenIndexList)
             for queenIndex in queenIndexList:
                 self.spawnQueen(queenIndex)
 
@@ -259,30 +261,8 @@ class App(QMainWindow):
             queen.hide()
                 
     def spawnQueen(self, queenIndex):
-        if(queenIndex < 8):
-            self.queenList[0].move(self.pos[queenIndex][0], self.pos[queenIndex][1])
-            self.queenList[0].show()
-        elif(queenIndex < 16):
-            self.queenList[1].move(self.pos[queenIndex][0], self.pos[queenIndex][1])
-            self.queenList[1].show()
-        elif(queenIndex < 24):
-            self.queenList[2].move(self.pos[queenIndex][0], self.pos[queenIndex][1])
-            self.queenList[2].show()
-        elif(queenIndex < 32):
-            self.queenList[3].move(self.pos[queenIndex][0], self.pos[queenIndex][1])
-            self.queenList[3].show()
-        elif(queenIndex < 40):
-            self.queenList[4].move(self.pos[queenIndex][0], self.pos[queenIndex][1])
-            self.queenList[4].show()
-        elif(queenIndex < 48):
-            self.queenList[5].move(self.pos[queenIndex][0], self.pos[queenIndex][1])
-            self.queenList[5].show()
-        elif(queenIndex < 56):
-            self.queenList[6].move(self.pos[queenIndex][0], self.pos[queenIndex][1])
-            self.queenList[6].show()
-        elif(queenIndex < 64):
-            self.queenList[7].move(self.pos[queenIndex][0], self.pos[queenIndex][1])
-            self.queenList[7].show()
+        self.queenList[queenIndex].move(self.pos[queenIndex][0], self.pos[queenIndex][1])
+        self.queenList[queenIndex].show()
 
     def saveCNF(self):
         options = QFileDialog.Options()
