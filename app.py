@@ -6,7 +6,9 @@ import sys
 import utils as Utils
 import copy
 import textwrap
+import style
 from Astar.queen_solver import QueenSolver
+from Astar.utils import generate_cnf_clauses
 
 class StateType:
     INITIAL = 1 # App has just started, no file selected
@@ -16,11 +18,10 @@ class App(QMainWindow):
     def __init__(self):
         super(App, self).__init__()
         self.state = { "type": StateType.INITIAL }
-        self.setFixedSize(720, 720)
+        self.setFixedSize(1039, 720)
         self.setWindowTitle("8-queen solvers")
         self.setStyleSheet("background-color: #FFFFFE;")
 
-        self.initStyle()
         self.initUI()
         self.initBoardMapping()
         self.initQueenList()
@@ -35,48 +36,50 @@ class App(QMainWindow):
         self.initChooseFileButton()
         self.initLeftButton()
         self.initRightButton()
-    
-    def initStyle(self):
-        self.navigateButtonStyle = """
-            QPushButton {
-                background-color: white;
-                border: none;
-                font-size: 20px;
-            }
+        self.initControlPanel()
 
-            QPushButton:pressed {
-                border: 2px solid #078080;
-                border-radius: 12px;
-            }
-        """
-        self.chooseFileButtonStyle = """
-            QPushButton {
-                background-color: #078080; 
-                border-radius: 17px;
-                color: white;
-                text-align: center;
-                font-family: 'Tahoma';
-                font-size: 12px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: white;
-                border: 2px solid #078080;
-                color: #078080;
-            }
-        """
+    def initControlPanel(self):
+        self.controlPanel = QtWidgets.QLabel(self)
+        self.controlPanel.setGeometry(679, 0, 360, 720)
+        self.controlPanel.setStyleSheet("background-color: #232323;")
 
-        self.loadingButtonStyle = """
-            QPushButton {
-                background-color: grey; 
-                border-radius: 17px;
-                color: white;
-                text-align: center;
-                font-family: 'Tahoma';
-                font-size: 12px;
-                font-weight: bold;
-            }
-        """
+        self.timeOuterContainer = QtWidgets.QLabel(self)
+        self.timeOuterContainer.setGeometry(727, 44, 264, 42)
+        self.timeOuterContainer.setStyleSheet(style.timeOuterContainerStyle)
+
+        self.timeInnerContainer = QtWidgets.QLabel(self)
+        self.timeInnerContainer.setGeometry(734, 49, 75, 31)
+        self.timeInnerContainer.setStyleSheet(style.timeInnerContainerStyle)
+        self.timeInnerContainer.setText("TIME")
+        self.timeInnerContainer.setAlignment(Qt.AlignCenter)
+
+        self.timeLabel = QtWidgets.QLabel(self)
+        self.timeLabel.setGeometry(835, 57, 137, 16)
+        self.timeLabel.setStyleSheet(style.timeLabelStyle)
+        self.timeLabel.setAlignment(Qt.AlignRight)
+
+        self.visualizePathButton = QtWidgets.QPushButton(self)
+        self.visualizePathButton.setGeometry(734, 109, 249, 41)
+        self.visualizePathButton.setStyleSheet(style.visualizePathButtonStyle)
+        self.visualizePathButton.setText("VISUALIZE PATH")
+        self.visualizePathButton.setCursor(QCursor(Qt.PointingHandCursor))
+        self.visualizePathButton.setEnabled(False)
+
+        self.visualizeExpandedListButton = QtWidgets.QPushButton(self)
+        self.visualizeExpandedListButton.setGeometry(768, 171, 181, 31)
+        self.visualizeExpandedListButton.setStyleSheet(style.visualizeExpandedListButtonStyle)
+        self.visualizeExpandedListButton.setCursor(QCursor(Qt.PointingHandCursor))
+        self.visualizeExpandedListButton.setText("VISUALIZE EXPANDED LIST")
+        self.visualizeExpandedListButton.setEnabled(False)
+
+        self.saveCNFButton = QtWidgets.QPushButton(self)
+        self.saveCNFButton.setGeometry(734, 604, 249, 41)
+        self.saveCNFButton.setStyleSheet(style.saveCNFButtonStyle)
+        self.saveCNFButton.setCursor(QCursor(Qt.PointingHandCursor))
+        self.saveCNFButton.setText("SAVE CNF TO TEXT FILE")
+        self.saveCNFButton.clicked.connect(self.saveCNF)
+        self.saveCNFButton.setEnabled(False)
+
     
     def initBoard(self):
         self.board = QtWidgets.QLabel(self)
@@ -88,25 +91,26 @@ class App(QMainWindow):
         self.button = QtWidgets.QPushButton(self)
         self.button.setGeometry(274, 603, 172, 44)
         self.button.setText("CHOOSE A FILE")
-        self.button.setStyleSheet(self.chooseFileButtonStyle)
+        self.button.setStyleSheet(style.chooseFileButtonStyle)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
         self.button.clicked.connect(self.chooseFile)
 
-    def createButton(self, x, y, w, h, iconPath):
+    def createNavigateButton(self, x, y, w, h, iconPath):
         tempButton = QtWidgets.QPushButton(self)
         tempButton.setGeometry(x, y, w, h)
         tempButton.setIcon(QtGui.QIcon(iconPath))
         tempButton.setIconSize(QSize(28,28))
-        tempButton.setStyleSheet(self.navigateButtonStyle)
+        tempButton.setStyleSheet(style.navigateButtonStyle)
         tempButton.setCursor(QCursor(Qt.PointingHandCursor))
+        tempButton.setEnabled(False)
         return tempButton
 
     def initLeftButton(self):
-        self.leftButton = self.createButton(213, 611, 28, 28, "./assets/left-arrow.png")
+        self.leftButton = self.createNavigateButton(213, 611, 28, 28, "./assets/left-arrow.png")
         self.leftButton.clicked.connect(self.decreaseStateIndex)
 
     def initRightButton(self):
-        self.rightButton = self.createButton(479, 611, 28, 28, "./assets/right-arrow.png")
+        self.rightButton = self.createNavigateButton(479, 611, 28, 28, "./assets/right-arrow.png")
         self.rightButton.clicked.connect(self.increaseStateIndex)
 
     def chooseFile(self):
@@ -119,7 +123,7 @@ class App(QMainWindow):
             inputData = Utils.load(fileName)
             queenSolver = QueenSolver(initial_state=inputData[0], remain=8-inputData[1])
             path, expanded_list, time = queenSolver.solve()
-            return self.updateState({"type": StateType.LOADED, "path": path, "expanded_list": expanded_list, "time": time, "index": 0, "maxIndex":8-inputData[1] })
+            return self.updateState({"type": StateType.LOADED, "path": path, "expanded_list": expanded_list, "time": int(time*1000), "index": 0, "maxIndex":len(path)-1 })
         return self.updateState(self.state)
 
     def initQueenList(self):
@@ -143,6 +147,38 @@ class App(QMainWindow):
         self.updateRightButton()
         self.updateChooseFileButton()
         self.updateBoard()
+        self.updateTimeLabel()
+        self.updateVisualPathButton()
+        self.updateVisualizeExpandedListButton()
+        self.updateSaveCNFButton()
+
+    def updateVisualPathButton(self):
+        stateType = self.state.get("type")
+        if stateType == StateType.INITIAL or stateType == StateType.LOADING:
+            self.visualizePathButton.setEnabled(False)
+        else:
+            self.visualizePathButton.setEnabled(True)
+
+    def updateVisualizeExpandedListButton(self):
+        stateType = self.state.get("type")
+        if stateType == StateType.INITIAL or stateType == StateType.LOADING:
+            self.visualizeExpandedListButton.setEnabled(False)
+        else:
+            self.visualizeExpandedListButton.setEnabled(True)
+
+    def updateSaveCNFButton(self):
+        stateType = self.state.get("type")
+        if stateType == StateType.INITIAL or stateType == StateType.LOADING:
+            self.saveCNFButton.setEnabled(False)
+        else:
+            self.saveCNFButton.setEnabled(True)
+
+    def updateTimeLabel(self):
+        stateType = self.state.get("type")
+        if stateType == StateType.LOADING:
+            self.timeLabel.setText("")
+        if stateType == StateType.LOADED:
+            self.timeLabel.setText("{}ms".format(str(self.state.get("time"))))
 
     def updateLeftButton(self):
         stateType = self.state.get("type")
@@ -171,12 +207,11 @@ class App(QMainWindow):
         stateType = self.state.get("type")
         if stateType == StateType.LOADING:
             self.button.setEnabled(False)
-            self.button.setStyleSheet(self.loadingButtonStyle)
+            self.button.setStyleSheet(style.loadingButtonStyle)
         elif stateType == StateType.LOADED:
             self.button.setEnabled(True)
-            self.button.setStyleSheet(self.chooseFileButtonStyle)
+            self.button.setStyleSheet(style.chooseFileButtonStyle)
             
-
     def updateBoard(self):
         stateType = self.state.get("type")
         if stateType == StateType.LOADED:
@@ -215,10 +250,23 @@ class App(QMainWindow):
         elif(queenIndex < 64):
             self.queenList[7].move(self.pos[queenIndex][0], self.pos[queenIndex][1])
             self.queenList[7].show()
-        
+
+    def saveCNF(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getSaveFileName(self,"Save CNF","","Text files (*.txt)", options=options)
+        if fileName:
+            if not fileName.endswith(".txt"):
+                fileName = fileName + ".txt"
+            stateType = self.state.get("type")
+            if stateType == StateType.LOADED:
+                cnf = generate_cnf_clauses(self.state.get("path")[self.state.get("index")])
+                with open(fileName, "w") as fileStream:
+                    fileStream.writelines(cnf)
 
 def run():
     app = QApplication(sys.argv)
+    QtGui.QFontDatabase.addApplicationFont('./assets/Roboto-Bold.ttf')
     window = App()
 
     window.show()
