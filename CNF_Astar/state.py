@@ -29,6 +29,12 @@ class State:
 		return [i for i in range(1, self.base ** 2 + 1) if self.vars[i]]
 	
 	def generate_neighbors(self, kb):
+
+		if self.num_true == 0:
+			n = random.choice([_ for _ in range(1, self.base ** 2 + 1)])
+			inference = copy.copy(self.vars)
+			inference[n] = True
+			return {State(inference)}
 		
 		next_true_vars = set([_ for _ in range(1, self.base ** 2 + 1)])
 		
