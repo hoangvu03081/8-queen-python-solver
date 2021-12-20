@@ -11,7 +11,7 @@ def load(filepath):
             coordinate = f.readline()
 
             binaryBoard = convertCoordinateToBinary(coordinate, queenNum)
-            if isinstance(binaryBoard, list):
+            if isinstance(binaryBoard, dict):
                 return (binaryBoard, queenNum)
             return False
     except Exception as err:
@@ -19,7 +19,10 @@ def load(filepath):
 
 def convertCoordinateToBinary(coordinate, n):
     if n == 0:
-        return list("0"*64)
+        queenDict = {}
+        for i in range(1,65):
+            queenDict[i] = False
+        return queenDict
     if not re.match("(\(\d, \d\))( \(\d, \d\)){"+str(n-1)+"}", coordinate):
         return print("Error: Second line format is not correct, please check again")
 
@@ -27,12 +30,18 @@ def convertCoordinateToBinary(coordinate, n):
     toBeCheckCoordinateList = [coordinateAsList[i:i + 2] for i in range(0, len(coordinateAsList), 2)]
     if not checkValidCoordinate(toBeCheckCoordinateList):
         return print("Error: There are invalid placements of queen: attacking queens")
-    queenPosition = []
+
+    queenDict = {}
+    for i in range(1,65):
+        queenDict[i] = False
+    for queenCoord in toBeCheckCoordinateList:
+        queenDict[queenCoord[0]*8 +queenCoord[1]+1] = True
+    return queenDict
 
     i = 0
     while i < n*2:
-        if coordinateAsList[i] < 0 or coordinateAsList[i] > 7 or coordinateAsList[i+1] < 0 or coordinateAsList[i+1] > 7:
-            return print("Error: Some coordination is out of range [0,7]")
+        if coordinateAsList[i] < 1 or coordinateAsList[i] > 8 or coordinateAsList[i+1] < 1 or coordinateAsList[i+1] > 8:
+            return print("Error: Some coordination is out of range [1,8]")
         queenPosition.append(coordinateAsList[i]*8 + coordinateAsList[i+1])
         i+=2
     

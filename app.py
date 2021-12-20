@@ -7,8 +7,7 @@ import utils as Utils
 import copy
 import textwrap
 import style
-from Astar.queen_solver import QueenSolver
-from Astar.utils import generate_cnf_clauses
+from CNF_Astar.queen_solver import QueenSolver
 
 class StateType:
     INITIAL = 1 # App has just started, no file selected
@@ -129,8 +128,10 @@ class App(QMainWindow):
             inputData = Utils.load(fileName)
             if not isinstance(inputData, tuple):
                 return self.updateState(rollbackState)
-            queenSolver = QueenSolver(initial_state=inputData[0], remain=8-inputData[1])
-            path, expanded_list, time = queenSolver.solve()
+            queenSolver = QueenSolver()
+            path, expanded_list, time = queenSolver.solve(inputData[0], remain=8-inputData[1])
+            if len(path) == 0:
+                QMessageBox.about(self, "Information", "There is no solution")
             return self.updateState(
                 {"type": StateType.LOADED, 
                 "path": path, 
@@ -247,17 +248,17 @@ class App(QMainWindow):
 
         if stateType == StateType.LOADED:
             self.clearQueen()
-            currentBoard = self.state.get("path")[self.state.get("index")]
-            queenIndexList = [i for i, ltr in enumerate(currentBoard) if ltr == "1"]
-            for queenIndex in queenIndexList:
-                self.spawnQueen(queenIndex)
+            if len(self.state.get("path"))== 0:
+                return
+            currentBoard = self.state.get("path")[self.state.get("index")].true_vars()
+            for queenIndex in currentBoard:
+                self.spawnQueen(queenIndex - 1)
 
         elif stateType == StateType.VISUALIZE_EXPANDED_LIST:
             self.clearQueen()
-            currentBoard = self.state.get("expanded_list")[self.state.get("index")]
-            queenIndexList = [i for i, ltr in enumerate(currentBoard) if ltr == "1"]
-            for queenIndex in queenIndexList:
-                self.spawnQueen(queenIndex)
+            currentBoard = self.state.get("expanded_list")[self.state.get("index")].true_vars()
+            for queenIndex in currentBoard:
+                self.spawnQueen(queenIndex - 1)
 
     def clearQueen(self):
         for queen in self.queenList:
@@ -272,15 +273,16 @@ class App(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getSaveFileName(self,"Save CNF","","Text files (*.txt)", options=options)
         if fileName:
+            queenSolver = QueenSolver()
             if not fileName.endswith(".txt"):
                 fileName = fileName + ".txt"
             stateType = self.state.get("type")
             if stateType == StateType.LOADED:
-                cnf = generate_cnf_clauses(self.state.get("path")[self.state.get("index")])
+                cnf = queenSolver.generate_cnf(self.state.get("path")[self.state.get("maxIndex")])
                 with open(fileName, "w") as fileStream:
                     fileStream.writelines(cnf)
             elif stateType == StateType.VISUALIZE_EXPANDED_LIST:
-                cnf = generate_cnf_clauses(self.state.get("path")[self.state.get("maxIndex")])
+                cnf = queenSolver.generate_cnf(self.state.get("path")[self.state.get("maxIndex")])
                 with open(fileName, "w") as fileStream:
                     fileStream.writelines(cnf)
 
