@@ -6,8 +6,8 @@ import time
 base = 8
 remain = 8
 initial_string = ["0" for _ in range(base * base)]
-#initial_string[24] = "1"
-#initial_string[62] = "1"
+initial_string[8] = "1"
+initial_string[63] = "1"
 #initial_string[10] = "1"
 #initial_string = "".join(initial_string)
 
@@ -16,10 +16,10 @@ e = QueenSolver(initial_state = initial_string, base = base, remain = remain, on
 
 
 path, expanded_list, time_ = e.solve()
-goal_state = path[-1]
+#goal_state = path[-1]
 
-cnf_clauses = generate_cnf_clauses(goal_state)
-print("".join(cnf_clauses))
+#cnf_clauses = generate_cnf_clauses(goal_state)
+#print("".join(cnf_clauses))
 
 print("Solving time: ", time_)
 print()
