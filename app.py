@@ -127,6 +127,8 @@ class App(QMainWindow):
         if fileName:
             self.updateState({"type": StateType.LOADING})
             inputData = Utils.load(fileName)
+            if not isinstance(inputData, tuple):
+                return self.updateState(rollbackState)
             queenSolver = QueenSolver(initial_state=inputData[0], remain=8-inputData[1])
             path, expanded_list, time = queenSolver.solve()
             return self.updateState(
@@ -230,6 +232,9 @@ class App(QMainWindow):
         
     def updateChooseFileButton(self):
         stateType = self.state.get("type")
+        if stateType == StateType.INITIAL:
+            self.button.setEnabled(True)
+            self.button.setStyleSheet(style.chooseFileButtonStyle)
         if stateType == StateType.LOADING:
             self.button.setEnabled(False)
             self.button.setStyleSheet(style.loadingButtonStyle)
@@ -248,11 +253,9 @@ class App(QMainWindow):
                 self.spawnQueen(queenIndex)
 
         elif stateType == StateType.VISUALIZE_EXPANDED_LIST:
-            print(self.state.get("expanded_list")[self.state.get("index")])
             self.clearQueen()
             currentBoard = self.state.get("expanded_list")[self.state.get("index")]
             queenIndexList = [i for i, ltr in enumerate(currentBoard) if ltr == "1"]
-            print(queenIndexList)
             for queenIndex in queenIndexList:
                 self.spawnQueen(queenIndex)
 
@@ -296,7 +299,6 @@ class App(QMainWindow):
 
     def updateExpandedList(self):
         stateType = self.state.get("type")
-        print(self.state.get("index"))
         if stateType == StateType.VISUALIZE_EXPANDED_LIST and self.state.get("index") < len(self.state.get("expanded_list"))-1:
             self.updateState({"type": StateType.VISUALIZE_EXPANDED_LIST, "index": self.state.get("index") + 1})
 
