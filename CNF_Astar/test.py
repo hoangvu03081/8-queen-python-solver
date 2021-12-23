@@ -16,7 +16,7 @@ inference = {}
 for var in range(1, 65):
 	inference[var] = False 
 
-#inference[2] = True
+inference[2] = True
 #inference[64] = True
 #inference[50] = True
 
@@ -24,7 +24,7 @@ for var in range(1, 65):
 ############ Display flow ################
 
 solver = QueenSolver()
-path, expanded_list, time_ = solver.solve(inference, remain = 8)
+path, expanded_list, time_ = solver.solve(inference, remain = 6)
 
 print("Search time: ", time_)
 

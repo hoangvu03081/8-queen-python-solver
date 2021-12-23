@@ -32,7 +32,7 @@ class QueenSolver:
 		f = defaultdict(lambda : float('inf'), f) 
 		initial_state = State(initial_state)
 
-		f[initial_state] = remain - initial_state.num_of_true_vars()
+		f[initial_state] = 8 - initial_state.num_of_true_vars()
 
 		frontier.append((f[initial_state], 0, initial_state, None))
 		seen = set()
@@ -62,7 +62,7 @@ class QueenSolver:
 					continue
 				
 				g_ = g_n + 1
-				h_ = const * (remain - state.num_of_true_vars())
+				h_ = const * (8 - state.num_of_true_vars())
 				f_ = h_ + g_
 
 				if f[neighbor] > f_:
